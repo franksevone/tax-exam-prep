@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สรรพากร Smart Prep & AI Tutor | ระบบคลังความรู้เตรียมสอบนักวิชาการสรรพากร</title>
+  
+  <!-- FontAwesome & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-badge">
+          <i class="fas fa-gavel"></i> ตัวบทกฎหมายฉบับเต็มในตัว
+        </div>
+        <div class="sidebar-title">
+          <i class="fas fa-book-bookmark" style="color: #2dd4bf;"></i>
+          <span>RD Smart Prep</span>
+        </div>
+        <div class="sidebar-subtitle">คลังความรู้สอบนักวิชาการสรรพากร</div>
+      </div>
+
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="ค้นหาหัวข้อ / มาตรา / คำสำคัญ...">
+      </div>
+
+      <div class="topic-menu" id="topicMenu">
+        <!-- Dynamically rendered by app.js -->
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="theme-toggle-btn" id="themeBtn">
+          <i class="fas fa-moon" id="themeIcon"></i>
+          <span id="themeText">โหมดมืด</span>
+        </button>
+        <span style="font-size:0.75rem; color:#64748b;">v3.0.0</span>
+      </div>
+    </aside>
+
+    <!-- MAIN AREA -->
+    <main class="main-area">
+      <!-- TOP NAVBAR -->
+      <header class="top-navbar">
+        <div class="nav-left">
+          <button class="hamburger-btn" id="hamburgerBtn" aria-label="เปิดเมนูหัวข้อ">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="breadcrumb">
+            <span id="breadcrumbCat">หมวดหมู่</span>
+            <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
+            <span class="active" id="breadcrumbTitle">ชื่อหัวข้อ</span>
+          </div>
+        </div>
+
+        <div class="nav-actions">
+          <button class="btn btn-outline" id="askAiCurrentBtn">
+            <i class="fas fa-robot" style="color:var(--primary-color)"></i>
+            <span class="nav-ask-label">ถาม AI เรื่องนี้</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- CONTENT BODY -->
+      <div class="content-body">
+        <div class="article-container" id="articleContainer">
+          <!-- Article rendered by app.js -->
+        </div>
+
+        <!-- RIGHT SIDE PANEL (NOTES) -->
+        <div class="side-panel">
+          <div class="panel-widget">
+            <div class="widget-title">
+              <span><i class="fas fa-edit" style="color:var(--primary-color)"></i> สมุดโน้ตส่วนตัว</span>
+              <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">Auto-saved</span>
+            </div>
+            <textarea class="notes-textarea" id="topicNotes" placeholder="บันทึกสรุปย่อ หรือโน้ตเตือนความจำสำหรับหัวข้อนี้..."></textarea>
+          </div>
+
+          <div class="panel-widget" style="background: linear-gradient(135deg, rgba(13, 148, 136, 0.08), rgba(15, 118, 110, 0.15)); border: 1px solid rgba(13, 148, 136, 0.2);">
+            <div class="widget-title" style="color: var(--primary-color);">
+              <span><i class="fas fa-lightbulb"></i> เทคนิคการอ่านสอบ</span>
+            </div>
+            <ul style="font-size: 0.875rem; color: var(--text-main); padding-left: 18px; line-height: 1.6;">
+              <li style="margin-bottom: 6px;">ท่องจำเงินได้ 40(1)-(8) และค่าหักลดหย่อนให้แม่น</li>
+              <li style="margin-bottom: 6px;">ระวังข้อสอบลวงเรื่อง ม.65 ตรี รายจ่ายต้องห้าม</li>
+              <li>เน้นการคิดคำนวณฐานภาษี และเกณฑ์เวลาการยื่นแบบ</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- FLOATING FAB FOR AI -->
+  <button class="fab-ai-btn" id="fabAiBtn">
+    <i class="fas fa-headset" style="font-size: 1.1rem;"></i>
+    <span>AI ติวเตอร์ภาษี</span>
+  </button>
+
+  <!-- DIRECT LAW STATUTE MODAL DIALOG -->
+  <div id="statuteModal" class="statute-modal-overlay" style="display:none;">
+    <div class="statute-modal-card">
+      <div class="statute-modal-header">
+        <div class="statute-modal-title" id="statuteModalTitle">
+          <i class="fas fa-scroll" style="color:#2dd4bf;"></i>
+          <span>ตัวบทกฎหมายฉบับเต็ม</span>
+        </div>
+        <button class="statute-modal-close" id="closeStatuteModalBtn"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="statute-modal-body" id="statuteModalBody">
+        <!-- Verbatim Legal Text Rendered Here -->
+      </div>
+      <div class="statute-modal-footer">
+        <span style="font-size:0.8rem; color:var(--text-muted);">อ้างอิงจากบทบัญญัติแห่งประมวลรัษฎากร กรมสรรพากร</span>
+        <button class="btn btn-primary" id="closeStatuteModalBottomBtn">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI CHAT DRAWER -->
+  <div class="ai-chat-drawer" id="aiChatDrawer">
+    <div class="chat-header">
+      <div class="chat-header-title">
+        <i class="fas fa-robot" style="color: #2dd4bf;"></i>
+        <span>AI ติวเตอร์ภาษีสรรพากร</span>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button id="apiKeyToggleBtn" style="background:none; border:none; color:#94a3b8; cursor:pointer;" title="ตั้งค่า Gemini API Key (Live AI)">
+          <i class="fas fa-key"></i>
+        </button>
+        <button class="chat-close-btn" id="closeChatBtn"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+
+    <!-- API KEY INPUT CONTAINER -->
+    <div id="apiKeyContainer" style="display:none; padding:10px 16px; background:#0f172a; border-bottom:1px solid #1e293b;">
+      <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:4px;">ใส่อบรม Gemini API Key (เพื่อใช้ AI โมเดลจริงแบบเรียลไทม์):</div>
+      <div style="display:flex; gap:6px;">
+        <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..." style="flex:1; padding:6px 10px; font-size:0.8rem; border-radius:4px; border:1px solid #334155; background:#1e293b; color:#fff;">
+        <button id="saveApiKeyBtn" style="padding:6px 10px; font-size:0.78rem; border-radius:4px; background:#0d9488; color:#fff; border:none; cursor:pointer;">บันทึก</button>
+      </div>
+    </div>
+
+    <div class="chat-body" id="chatBody">
+      <div class="chat-msg bot">
+        สวัสดีครับ! ผมคือ <strong>AI ติวเตอร์สอบนักวิชาการสรรพากร</strong> 🏛️<br><br>
+        สามารถพิมพ์ถามคำถามประมวลรัษฎากรได้เลยครับ!
+      </div>
+    </div>
+
+    <div class="chat-input-box">
+      <input type="text" id="chatInput" placeholder="พิมพ์คำถามภาษี หรือเรื่องที่สงสัย...">
+      <button class="chat-send-btn" id="sendChatBtn"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <!-- JavaScript Files -->
+  <script src="knowledge_data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
