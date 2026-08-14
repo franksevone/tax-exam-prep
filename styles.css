@@ -1289,3 +1289,237 @@ body {
     font-size: 0.875rem;
   }
 }
+
+/* ==================== เส้นทางการเรียนรู้ 0-100 (เฟส 8.5) ==================== */
+.menu-group-header-path {
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.12), rgba(2, 132, 199, 0.12));
+  border-left: 3px solid var(--primary-color);
+}
+
+.lp-hero {
+  padding: 24px;
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid var(--border-color);
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.07), rgba(2, 132, 199, 0.07));
+  margin-bottom: 20px;
+}
+
+.lp-progress-wrap {
+  margin: 16px 0 4px;
+}
+.lp-progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.lp-progress-label strong {
+  color: var(--primary-color);
+  font-size: 1rem;
+}
+.lp-progress-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--border-color);
+  overflow: hidden;
+}
+.lp-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0d9488, #0284c7);
+  transition: width 0.4s ease;
+}
+.lp-progress-sub {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.lp-next-box {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px dashed var(--primary-color);
+  background: rgba(13, 148, 136, 0.08);
+  font-size: 0.9rem;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.lp-stage {
+  margin-bottom: 22px;
+}
+.lp-stage-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lp-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+}
+.lp-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.lp-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary-color);
+}
+.lp-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.lp-step {
+  font-weight: 700;
+  color: var(--primary-color);
+}
+.lp-diff {
+  background: var(--border-color);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.lp-card-icon {
+  font-size: 1.3rem;
+  color: var(--primary-color);
+  margin-bottom: 6px;
+}
+.lp-card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+.lp-card-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.lp-card.lp-done {
+  opacity: 0.62;
+}
+.lp-card.lp-done .lp-card-meta {
+  color: var(--primary-color);
+}
+.lp-card.lp-next {
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+.lp-card.lp-quiz .lp-card-icon {
+  color: #f59e0b;
+}
+
+.lp-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-color);
+}
+.lp-nav-left {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.lp-nav-done {
+  font-size: 0.9rem;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+.btn-sm {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
+
+/* ==================== ปรับแต่งการแสดงผล (เฟส 8.5) ==================== */
+html[data-font="sm"] { font-size: 14px; }
+html[data-font="md"] { font-size: 16px; }
+html[data-font="lg"] { font-size: 18px; }
+html[data-font="xl"] { font-size: 20px; }
+
+.settings-panel {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-card);
+}
+.settings-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.settings-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ปุ่มเรียนต่อจากที่ค้างไว้ในเมนู */
+.lp-resume-item {
+  border-top: 1px dashed var(--border-color);
+}
+.lp-resume-item .topic-name {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* การ์ดเส้นทาง: ปุ่มติ๊กอ่านแล้ว/ยกเลิกรายหัวข้อ */
+.lp-toggle {
+  margin-top: 10px;
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 0.78rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.lp-toggle:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+.lp-card.lp-done .lp-toggle {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  background: rgba(13, 148, 136, 0.08);
+}
+
+/* แถวปุ่มล่างของ hero เส้นทาง */
+.lp-hero-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.lp-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}

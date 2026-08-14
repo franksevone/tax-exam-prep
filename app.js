@@ -7,6 +7,9 @@ let currentTopicId = KNOWLEDGE_BASE[0].id;
 let isDarkMode = localStorage.getItem("theme") === "dark";
 
 document.addEventListener("DOMContentLoaded", () => {
+  // ขนาดตัวอักษรที่ผู้ใช้ตั้งไว้ (ปรับแต่งการแสดงผล)
+  applyFontScale(localStorage.getItem("font_scale") || "md");
+
   // Initialize Theme
   if (isDarkMode) {
     document.documentElement.setAttribute("data-theme", "dark");
@@ -40,6 +43,8 @@ function renderSidebarMenu(filterQuery = "") {
   const menuContainer = document.getElementById("topicMenu");
   if (!menuContainer) return;
   menuContainer.innerHTML = "";
+  // หัวข้อพิเศษ: เส้นทางการเรียนรู้ 0-100 (แสดงเสมอ แม้กำลังค้นหา)
+  menuContainer.appendChild(buildLearningPathMenuItem());
 
   const matches = (t) =>
     !filterQuery ||
@@ -165,9 +170,198 @@ function appendCategoryGroup(menuContainer, topics) {
   }
 }
 
+// ---------- เส้นทางการเรียนรู้ 0-100 (เฟส 8.5) ----------
+// อ่านตามลำดับ step 1 -> 63 จากง่ายไปยาก ป้องกันสับสน (เช่น ยังไม่รู้บวกลบ ก็ไม่ต้องไปเรียนคูณหารก่อน)
+function getLearningPathIndex(topicId) {
+  return LEARNING_PATH.findIndex((p) => p.id === topicId);
+}
+// ความคืบหน้าเก็บเป็นชุดของขั้นที่อ่านแล้ว (รองรับการติ๊ก/ยกเลิกทีละขั้นได้)
+function getLpDoneSet() {
+  const raw = localStorage.getItem("lp_done");
+  if (!raw) return new Set();
+  try {
+    const v = JSON.parse(raw);
+    if (Array.isArray(v)) return new Set(v.map(Number).filter((n) => !Number.isNaN(n) && n >= 0 && n < LEARNING_PATH.length));
+  } catch (e) {
+    /* fallthrough */
+  }
+  // รูปแบบเก่า: ตัวเลข = ขั้นสูงสุดที่อ่านถึง -> แปลงเป็นชุด 0..n
+  const n = parseInt(raw, 10);
+  if (!Number.isNaN(n)) {
+    const s = new Set();
+    for (let i = 0; i <= Math.min(n, LEARNING_PATH.length - 1); i++) s.add(i);
+    return s;
+  }
+  return new Set();
+}
+function saveLpDoneSet(set) {
+  localStorage.setItem("lp_done", JSON.stringify([...set].sort((a, b) => a - b)));
+}
+function getLpDoneCount() {
+  return getLpDoneSet().size;
+}
+// ขั้นถัดไปที่ยังไม่ได้อ่าน = index ต่ำสุดที่ไม่อยู่ในชุด
+function getNextLpStep() {
+  const done = getLpDoneSet();
+  for (let i = 0; i < LEARNING_PATH.length; i++) if (!done.has(i)) return i;
+  return LEARNING_PATH.length; // เรียนครบแล้ว
+}
+function markLearningPathVisited(topicId) {
+  const lpIdx = getLearningPathIndex(topicId);
+  if (lpIdx === -1) return;
+  const done = getLpDoneSet();
+  if (!done.has(lpIdx)) {
+    done.add(lpIdx);
+    saveLpDoneSet(done);
+  }
+}
+function toggleLpStep(stepIdx) {
+  const done = getLpDoneSet();
+  if (done.has(stepIdx)) done.delete(stepIdx);
+  else done.add(stepIdx);
+  saveLpDoneSet(done);
+}
+function resetLpProgress() {
+  localStorage.removeItem("lp_done");
+}
+function lpTitle(id) {
+  const t = KNOWLEDGE_BASE.find((x) => x.id === id);
+  return t ? t.title : id;
+}
+function buildLearningPathMenuItem() {
+  const group = document.createElement("div");
+  group.className = "menu-group";
+  const header = document.createElement("div");
+  header.className = "menu-group-header menu-group-header-path";
+  header.innerHTML = `
+    <div class="menu-group-title"><i class="fas fa-route" style="color:var(--primary-color);"></i> เส้นทางการเรียนรู้ 0-100</div>
+    <div class="menu-group-header-right"><i class="fas fa-chevron-down menu-group-chevron"></i></div>
+  `;
+  const body = document.createElement("div");
+  body.className = "menu-group-body";
+  const item = document.createElement("div");
+  item.className = `topic-item ${currentTopicId === "__learning_path__" ? "active" : ""}`;
+  item.onclick = () => {
+    renderLearningPath();
+    closeSidebar();
+  };
+  item.innerHTML = `
+    <div class="topic-icon"><i class="fas fa-map-signs"></i></div>
+    <div class="topic-info">
+      <div class="topic-name">เริ่มเรียนตามลำดับ (ง่าย → ยาก)</div>
+      <div class="topic-meta">63 ขั้น จากปูพื้นฐาน ไปจนถึงเก็งข้อสอบ</div>
+    </div>
+  `;
+  body.appendChild(item);
+  // ปุ่มเรียนต่อจากที่ค้างไว้ (ข้ามไปขั้นถัดไปที่ยังไม่ได้อ่าน)
+  const remaining = LEARNING_PATH.length - getLpDoneCount();
+  const item2 = document.createElement("div");
+  item2.className = "topic-item lp-resume-item";
+  item2.onclick = () => {
+    const nx = getNextLpStep();
+    if (nx < LEARNING_PATH.length) selectTopic(LEARNING_PATH[nx].id);
+    else renderLearningPath();
+    closeSidebar();
+  };
+  item2.innerHTML = `
+    <div class="topic-icon" style="color:var(--primary-color);"><i class="fas fa-play"></i></div>
+    <div class="topic-info">
+      <div class="topic-name">เรียนต่อจากที่ค้างไว้</div>
+      <div class="topic-meta">${remaining > 0 ? `เหลืออีก ${remaining} ขั้น` : "เรียนครบแล้ว 🎉"}</div>
+    </div>
+  `;
+  body.appendChild(item2);
+  group.appendChild(header);
+  group.appendChild(body);
+  return group;
+}
+function renderLearningPath() {
+  currentTopicId = "__learning_path__";
+  const bcCat = document.getElementById("breadcrumbCat");
+  const bcTitle = document.getElementById("breadcrumbTitle");
+  if (bcCat) bcCat.textContent = "เส้นทางการเรียนรู้";
+  if (bcTitle) bcTitle.textContent = "0 → 100 จากมือใหม่สู่พร้อมสอบ";
+
+  const container = document.getElementById("articleContainer");
+  if (!container) return;
+
+  const doneSet = getLpDoneSet();
+  const doneCount = doneSet.size;
+  const pct = Math.round((doneCount / LEARNING_PATH.length) * 100);
+  const nextStep = getNextLpStep();
+  const allDone = nextStep >= LEARNING_PATH.length;
+  const nextP = allDone ? null : LEARNING_PATH[nextStep];
+  const nextTopic = nextP ? KNOWLEDGE_BASE.find((t) => t.id === nextP.id) : null;
+
+  const stages = {};
+  LEARNING_PATH.forEach((p, i) => {
+    if (!stages[p.stage]) stages[p.stage] = [];
+    stages[p.stage].push({ ...p, idx: i });
+  });
+
+  const stageHTML = Object.entries(stages)
+    .map(([stageName, steps]) => {
+      const cards = steps
+        .map((s) => {
+          const t = KNOWLEDGE_BASE.find((x) => x.id === s.id);
+          if (!t) return "";
+          const isQuiz = isQuizSet(t);
+          const isDone = doneSet.has(s.idx);
+          const isNext = !allDone && s.idx === nextStep;
+          const cls = ["lp-card", isDone ? "lp-done" : "", isNext ? "lp-next" : "", isQuiz ? "lp-quiz" : ""].join(" ");
+          return `
+            <div class="${cls}" onclick="selectTopic('${s.id}')" role="button" tabindex="0">
+              <div class="lp-card-top">
+                <span class="lp-step">ขั้น ${s.idx + 1}</span>
+                <span class="lp-diff">ยาก ${s.difficulty}/100</span>
+              </div>
+              <div class="lp-card-icon"><i class="fas ${t.categoryIcon || "fa-book-open"}"></i></div>
+              <div class="lp-card-title">${escapeHTML(t.title)}</div>
+              <div class="lp-card-meta">${isQuiz ? "แบบทดสอบ" : "เนื้อหา"}${isNext ? " · 👉 อ่านถัดไป" : ""}</div>
+              <button class="lp-toggle" onclick="event.stopPropagation();toggleLpStep(${s.idx});renderLearningPath();" title="${isDone ? "ยกเลิกเครื่องหมายอ่านแล้ว" : "ทำเครื่องหมายว่าอ่านแล้ว"}">
+                ${isDone ? '<i class="fas fa-undo-alt"></i> ยกเลิก' : '<i class="fas fa-check"></i> อ่านแล้ว'}
+              </button>
+            </div>`;
+        })
+        .join("");
+      return `
+        <div class="lp-stage">
+          <div class="lp-stage-title"><i class="fas fa-layer-group"></i> ${escapeHTML(stageName)}</div>
+          <div class="lp-cards">${cards}</div>
+        </div>`;
+    })
+    .join("");
+
+  container.innerHTML = `
+    <div class="lp-hero">
+      <h1 class="article-title">🎯 เส้นทางการเรียนรู้ 0 → 100</h1>
+      <p class="article-summary">อ่านตามลำดับขั้นจากบนลงล่าง — เริ่มจากคนที่ไม่เคยเรียนภาษีเลย ค่อย ๆ ปูพื้นฐานก่อน แล้วค่อยเจอเรื่องยาก ไม่มีการข้ามขั้นที่ทำให้สับสน (เหมือนต้องเรียนบวกลบก่อนคูณหาร)</p>
+      <div class="lp-progress-wrap">
+        <div class="lp-progress-label"><span>ความคืบหน้า</span><strong>${pct}%</strong></div>
+        <div class="lp-progress-bar"><div class="lp-progress-fill" style="width:${pct}%"></div></div>
+        <div class="lp-progress-sub">อ่านแล้ว ${doneCount} จาก ${LEARNING_PATH.length} ขั้น</div>
+      </div>
+      <div class="lp-next-box">
+        ${
+          allDone
+            ? "🎉 <strong>เรียนครบทุกขั้นแล้ว!</strong> กลับไปทบทวนหรือทำข้อสอบรวมซ้ำได้เลย"
+            : `ถัดไปที่ต้องอ่าน → <strong>${escapeHTML(nextTopic ? nextTopic.title : "")}</strong> <button class="btn btn-primary" onclick="selectTopic('${nextP.id}')">เริ่มอ่าน <i class="fas fa-arrow-right"></i></button>`
+        }
+      </div>
+      <div class="lp-hero-actions">
+        ${allDone ? "" : `<button class="btn btn-primary" onclick="selectTopic('${nextP.id}')"><i class="fas fa-play"></i> เรียนต่อจากที่ค้างไว้</button>`}
+        <button class="btn btn-outline" onclick="if(confirm('รีเซ็ตความคืบหน้าเส้นทางการเรียนรู้ทั้งหมด? เครื่องหมายอ่านแล้วทั้งหมดจะหายไป')){resetLpProgress();renderLearningPath();}"><i class="fas fa-rotate-left"></i> รีเซ็ตความคืบหน้าทั้งหมด</button>
+        <span class="lp-hint">💡 คลิกปุ่ม "อ่านแล้ว" บนการ์ด เพื่อติ๊ก/ยกเลิกทีละหัวข้อได้</span>
+      </div>
+    </div>
+    ${stageHTML}
+  `;
+}
+
 // Select topic & view article
 function selectTopic(topicId) {
   currentTopicId = topicId;
+  markLearningPathVisited(topicId);
   const searchInput = document.getElementById("searchInput");
   renderSidebarMenu(searchInput ? searchInput.value : "");
   renderArticle(topicId);
@@ -262,6 +456,22 @@ function renderArticle(topicId) {
     `;
   }
 
+  // ปุ่มก่อนหน้า/ถัดไป สำหรับเส้นทางการเรียนรู้ (เฉพาะหัวข้อที่อยู่ในเส้นทาง)
+  let lpNavHTML = "";
+  const lpIdx = getLearningPathIndex(topicId);
+  if (lpIdx !== -1) {
+    const prevP = lpIdx > 0 ? LEARNING_PATH[lpIdx - 1] : null;
+    const nextP = lpIdx < LEARNING_PATH.length - 1 ? LEARNING_PATH[lpIdx + 1] : null;
+    lpNavHTML = `
+      <div class="lp-nav">
+        <div class="lp-nav-left">
+          <button class="btn btn-outline btn-sm" onclick="renderLearningPath()"><i class="fas fa-route"></i> เส้นทางการเรียนรู้</button>
+          ${prevP ? `<button class="btn btn-outline btn-sm" onclick="selectTopic('${prevP.id}')"><i class="fas fa-arrow-left"></i> ก่อนหน้า: ${escapeHTML(lpTitle(prevP.id))}</button>` : ""}
+        </div>
+        ${nextP ? `<button class="btn btn-primary" onclick="selectTopic('${nextP.id}')">ต่อไป: ${escapeHTML(lpTitle(nextP.id))} <i class="fas fa-arrow-right"></i></button>` : `<span class="lp-nav-done">🎉 เรียนครบเส้นทางแล้ว!</span>`}
+      </div>`;
+  }
+
   container.innerHTML = `
     <div class="article-header">
       <div class="article-tags">
@@ -275,6 +485,7 @@ function renderArticle(topicId) {
     ${keyLawsHTML}
     ${sectionsHTML}
     ${quizHTML}
+    ${lpNavHTML}
   `;
 }
 
@@ -365,6 +576,22 @@ function setupEventListeners() {
       localStorage.setItem("theme", isDarkMode ? "dark" : "light");
       updateThemeIcon(isDarkMode);
     });
+  }
+
+  // ปรับแต่งการแสดงผล (ขนาดตัวอักษร)
+  const settingsBtn = document.getElementById("settingsBtn");
+  const settingsPanel = document.getElementById("settingsPanel");
+  if (settingsBtn && settingsPanel) {
+    settingsBtn.addEventListener("click", () => {
+      settingsPanel.style.display = settingsPanel.style.display === "none" ? "block" : "none";
+    });
+  }
+  document.querySelectorAll("[data-font]").forEach((btn) => {
+    btn.addEventListener("click", () => applyFontScale(btn.getAttribute("data-font")));
+  });
+  const resetDisplayBtn = document.getElementById("resetDisplayBtn");
+  if (resetDisplayBtn) {
+    resetDisplayBtn.addEventListener("click", () => applyFontScale("md"));
   }
 
   // API Key Settings Toggle
@@ -483,6 +710,13 @@ function updateThemeIcon(dark) {
       text.textContent = "โหมดมืด";
     }
   }
+}
+
+// ขนาดตัวอักษร (ปรับแต่งการแสดงผล): sm / md / lg / xl
+function applyFontScale(scale) {
+  const s = ["sm", "md", "lg", "xl"].includes(scale) ? scale : "md";
+  document.documentElement.setAttribute("data-font", s);
+  localStorage.setItem("font_scale", s);
 }
 
 function loadUserNotes() {

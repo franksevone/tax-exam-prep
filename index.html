@@ -36,11 +36,27 @@
       </div>
 
       <div class="sidebar-footer">
-        <button class="theme-toggle-btn" id="themeBtn">
-          <i class="fas fa-moon" id="themeIcon"></i>
-          <span id="themeText">โหมดมืด</span>
-        </button>
-        <span style="font-size:0.75rem; color:#64748b;">v3.0.0</span>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="theme-toggle-btn" id="themeBtn">
+            <i class="fas fa-moon" id="themeIcon"></i>
+            <span id="themeText">โหมดมืด</span>
+          </button>
+          <button class="theme-toggle-btn" id="settingsBtn" title="ปรับแต่งการแสดงผล">
+            <i class="fas fa-sliders"></i>
+            <span>ปรับแต่ง</span>
+          </button>
+        </div>
+        <div class="settings-panel" id="settingsPanel" style="display:none;">
+          <div class="settings-title"><i class="fas fa-font"></i> ขนาดตัวอักษร</div>
+          <div class="settings-row">
+            <button class="btn btn-outline btn-sm" data-font="sm">ก- เล็ก</button>
+            <button class="btn btn-outline btn-sm" data-font="md">ก กลาง</button>
+            <button class="btn btn-outline btn-sm" data-font="lg">ก+ ใหญ่</button>
+            <button class="btn btn-outline btn-sm" data-font="xl">ก++ ใหญ่พิเศษ</button>
+          </div>
+          <button class="btn btn-outline btn-sm" id="resetDisplayBtn" style="width:100%; margin-top:8px;">คืนค่าการแสดงผลเริ่มต้น</button>
+        </div>
+        <span style="font-size:0.75rem; color:#64748b;">v3.2.0</span>
       </div>
     </aside>
 
